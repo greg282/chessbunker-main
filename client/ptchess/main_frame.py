@@ -12,9 +12,8 @@ import json
 from PyQt5 import QtCore, QtGui, QtWidgets,sip
 from PyQt5.QtWidgets import QStackedWidget
 from PyQt5.QtCore import pyqtSignal
-from services.service  import *
-from ws import *
-
+from pyqt.services.service  import *
+from pyqt.services.button_function import *
 
 
 class Ui_MainWindow(object):
@@ -57,10 +56,15 @@ class Ui_MainWindow(object):
 
     def delete_frame(self):
         sip.delete(self.frame)
-        
-
+    
+    '''
     def take_signup_form(self):
         _translate = QtCore.QCoreApplication.translate
+
+        #verification if password is the same
+        if self.lineEdit_password.text()!=self.lineEdit_password_repeat.text():
+            self.label.setText(_translate("MainWindow", "Passwords are not the same"))
+            
 
         res=signUpRequest(self.lineEdit_username.text(),self.lineEdit_email.text(),self.lineEdit_password.text())
         if res['status']==200:
@@ -134,9 +138,8 @@ class Ui_MainWindow(object):
         else:
             self.label.setText(_translate("MainWindow", res['message']))
 
-
+    '''
     def onMSG(self,ws,message):
-        self.game_frame.board.ws=ws
         print(message)
         if(json.loads(message)['message']!="ROOM_JOINED"):
             tmp_res=json.loads(message)['message'].split("@")
@@ -240,7 +243,9 @@ class Ui_MainWindow(object):
         self.lineEdit_password_repeat.setEchoMode(QtWidgets.QLineEdit.Password)
         self.lineEdit_password_repeat.setObjectName("lineEdit_password_repeat")
         self.gridLayout.addWidget(self.lineEdit_password_repeat, 3, 1, 1, 1)
-        
+        self.label_password_repeat = QtWidgets.QLabel(self.frame_sign_up)
+        self.label_password_repeat.setObjectName("label_password_repeat")
+        self.gridLayout.addWidget(self.label_password_repeat, 3, 0, 1, 1)
         ### end of adding password repeat
         self.label = QtWidgets.QLabel(self.frame_sign_up)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Maximum)
@@ -258,9 +263,13 @@ class Ui_MainWindow(object):
         self.label_email.setText(_translate("MainWindow", "Email"))
         self.label_password.setText(_translate("MainWindow", "Password"))
         self.label_username.setText(_translate("MainWindow", "Username"))
+        self.label_password_repeat.setText(_translate("MainWindow", "Repeat Password"))
+
 
         #below adding listeners
-        self.pushButton_signup.clicked.connect(self.take_signup_form)
+        #self.pushButton_signup.clicked.connect(take_signup_form)
+        #pass self instance into function from import
+        self.pushButton_signup.clicked.connect(lambda: take_signup_form(self))
 
     def make_login_form(self):
         self.delete_frame()
@@ -307,7 +316,9 @@ class Ui_MainWindow(object):
         self.label.setText(_translate("MainWindow", ""))
 
         ##listeners below
-        self.pushButton_login.clicked.connect(self.take_login_form)
+        #self.pushButton_login.clicked.connect(self.take_login_form)
+        #pass self instance into function from import
+        self.pushButton_login.clicked.connect(lambda: take_login_form(self))
 
 
 
