@@ -11,14 +11,15 @@ from pyqt.game import GameFrame
 import json
 from PyQt5 import QtCore, QtGui, QtWidgets,sip
 from PyQt5.QtWidgets import QStackedWidget
-from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtCore import pyqtSignal,QThread
 from pyqt.services.service  import *
 from pyqt.services.button_function import *
 
 
 class Ui_MainWindow(object):
     MainWindow_=None
-
+    room_join_counter=0
+    gameStartData=None
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(800, 600)
@@ -38,10 +39,11 @@ class Ui_MainWindow(object):
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
-       
+        self.make_menubar()
 
         app.setStyleSheet("QLabel{font-size:30pt;} QLineEdit{font-size:30pt;} QPushButton{font-size:30pt;}")
         self.MainWindow_=MainWindow
+
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -51,6 +53,24 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
 
 
+    def make_menubar(self):
+        self.menubar = QtWidgets.QMenuBar(MainWindow)
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 771, 29))
+        self.menubar.setObjectName("menubar")
+        self.menuBack = QtWidgets.QMenu(self.menubar)
+        self.menuBack.setObjectName("menuBack")
+        MainWindow.setMenuBar(self.menubar)
+        self.statusbar = QtWidgets.QStatusBar(MainWindow)
+        self.statusbar.setObjectName("statusbar")
+        MainWindow.setStatusBar(self.statusbar)
+        self.actionBack = QtWidgets.QAction(MainWindow)
+        self.actionBack.setObjectName("actionBack")
+        self.menuBack.addAction(self.actionBack)
+        self.menubar.addAction(self.menuBack.menuAction())
+
+        _translate = QtCore.QCoreApplication.translate
+        self.menuBack.setTitle(_translate("MainWindow", "Menu"))
+        self.actionBack.setText(_translate("MainWindow", "Go back"))
 
     #Button functions below
 
@@ -139,8 +159,19 @@ class Ui_MainWindow(object):
             self.label.setText(_translate("MainWindow", res['message']))
 
     '''
+    
+
+
     def onMSG(self,ws,message):
         print(message)
+        if(json.loads(message)['message']=="ROOM_JOINED"):
+            self.room_join_counter+=1
+            print(self.room_join_counter)
+            if(self.room_join_counter==2):
+               print(self.room_join_counter)
+
+               self.game_frame.board.threadJoin(self.gameStartData)
+               self.game_frame.board.joinThread.start()
         if(json.loads(message)['message']!="ROOM_JOINED"):
             tmp_res=json.loads(message)['message'].split("@")
             tmp_usr=tmp_res[0]
@@ -183,6 +214,8 @@ class Ui_MainWindow(object):
         #below adding listeners
         self.sign_up_button.clicked.connect(self.make_signup_form)
         self.log_in_button.clicked.connect(self.make_login_form)
+        #self.log_in_button.clicked.connect(self.make_menu_frame)
+        #self.log_in_button.clicked.connect(self.make_wait_screen)
 
 
     def make_signup_form(self):
@@ -270,6 +303,13 @@ class Ui_MainWindow(object):
         #self.pushButton_signup.clicked.connect(take_signup_form)
         #pass self instance into function from import
         self.pushButton_signup.clicked.connect(lambda: take_signup_form(self))
+        self.actionBack.triggered.connect(self.regenInitalfromSignup)
+
+
+    def regenInitalfromSignup(self):
+        sip.delete(self.frame_sign_up)
+        self.actionBack.triggered.disconnect()
+        self.make_initial_frame()
 
     def make_login_form(self):
         self.delete_frame()
@@ -319,10 +359,153 @@ class Ui_MainWindow(object):
         #self.pushButton_login.clicked.connect(self.take_login_form)
         #pass self instance into function from import
         self.pushButton_login.clicked.connect(lambda: take_login_form(self))
+        self.actionBack.triggered.connect(self.regenerate_initial_frame)
+
+
+    def make_menu_frame(self):
+        self.delete_frame()
+        self.centralwidget = QtWidgets.QWidget(MainWindow)
+        self.centralwidget.setObjectName("centralwidget")
+        self.horizontalLayout = QtWidgets.QHBoxLayout(self.centralwidget)
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        self.frame = QtWidgets.QFrame(self.centralwidget)
+        self.frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self.frame.setFrameShadow(QtWidgets.QFrame.Raised)
+        self.frame.setObjectName("frame")
+        self.horizontalLayout_2 = QtWidgets.QHBoxLayout(self.frame)
+        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
+        self.widget = QtWidgets.QWidget(self.frame)
+        self.widget.setStyleSheet("")
+        self.widget.setObjectName("widget")
+        self.verticalLayout = QtWidgets.QVBoxLayout(self.widget)
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.matchmake_button = QtWidgets.QPushButton(self.widget)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.matchmake_button.sizePolicy().hasHeightForWidth())
+        self.matchmake_button.setSizePolicy(sizePolicy)
+        font = QtGui.QFont()
+        font.setPointSize(20)
+        self.matchmake_button.setFont(font)
+        self.matchmake_button.setObjectName("matchmake_button")
+        self.verticalLayout.addWidget(self.matchmake_button, 0, QtCore.Qt.AlignHCenter)
+        self.globalrankin_button = QtWidgets.QPushButton(self.widget)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.globalrankin_button.sizePolicy().hasHeightForWidth())
+        self.globalrankin_button.setSizePolicy(sizePolicy)
+        font = QtGui.QFont()
+        font.setPointSize(20)
+        self.globalrankin_button.setFont(font)
+        self.globalrankin_button.setObjectName("globalrankin_button")
+        self.verticalLayout.addWidget(self.globalrankin_button, 0, QtCore.Qt.AlignHCenter)
+        self.horizontalLayout_2.addWidget(self.widget)
+        self.horizontalLayout.addWidget(self.frame)
+        MainWindow.setCentralWidget(self.centralwidget)
+   
+
+        _translate = QtCore.QCoreApplication.translate
+
+        self.retranslateUi(MainWindow)
+        QtCore.QMetaObject.connectSlotsByName(MainWindow)
+        self.matchmake_button.setText(_translate("MainWindow", "Matchmaking"))
+        self.globalrankin_button.setText(_translate("MainWindow", "Global Ranking"))
+
+        #connect actionBack to function
+        self.actionBack.triggered.connect(self.regenerate_initial_frame)
+
+    def regenerate_initial_frame(self):
+        self.delete_frame()
+        self.actionBack.triggered.disconnect()
+        self.make_initial_frame()
+
+    def make_wait_screen(self):
+        self.centralwidget = QtWidgets.QWidget(MainWindow)
+        self.centralwidget.setObjectName("centralwidget")
+        self.horizontalLayout = QtWidgets.QHBoxLayout(self.centralwidget)
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        self.frame = QtWidgets.QFrame(self.centralwidget)
+        self.frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self.frame.setFrameShadow(QtWidgets.QFrame.Raised)
+        self.frame.setObjectName("frame")
+        self.horizontalLayout_2 = QtWidgets.QHBoxLayout(self.frame)
+        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
+        self.widget = QtWidgets.QWidget(self.frame)
+        self.widget.setStyleSheet("")
+        self.widget.setObjectName("widget")
+        self.verticalLayout = QtWidgets.QVBoxLayout(self.widget)
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.label = QtWidgets.QLabel(self.widget)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Maximum)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.label.sizePolicy().hasHeightForWidth())
+        self.label.setSizePolicy(sizePolicy)
+        font = QtGui.QFont()
+        font.setFamily("Comfortaa")
+        font.setPointSize(25)
+        font.setBold(True)
+        font.setItalic(True)
+        font.setWeight(75)
+        self.label.setFont(font)
+        self.label.setObjectName("label")
+        self.verticalLayout.addWidget(self.label, 0, QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter)
+        self.horizontalLayout_2.addWidget(self.widget)
+        self.horizontalLayout.addWidget(self.frame)
+        MainWindow.setCentralWidget(self.centralwidget)
+
+        _translate = QtCore.QCoreApplication.translate
+        self.label.setText(_translate("MainWindow", "Please wait for opponent ..."))
+
+    def start_game(self,signal):    
+        self,res_match,s,tmp_user,is_white,ws=self.gameStartData[0],self.gameStartData[1],self.gameStartData[2],self.gameStartData[3],self.gameStartData[4],self.gameStartData[5]
+        ### setup gameframe
+        print(signal)
+        self.delete_frame()
+        #self.game_frame = GameFrame(self,is_white)
+        self.game_frame.board.difficulty=1
+        self.game_frame.board.username=tmp_user
+        #set matchmaking params to board
+        self.game_frame.board.id=res_match['id']
+        self.game_frame.board.session=s
+        self.game_frame.board.ws=ws
+        self.horizontalLayout.addWidget(self.game_frame)
+        ###widget do kolejnosci gr
+        self.widget = QtWidgets.QWidget(self.game_frame)
+        self.widget.setGeometry(QtCore.QRect(1000, 14, 161, 111))
+        self.widget.setStyleSheet("background-color: rgb(255, 255, 255);")
+        self.widget.setObjectName("widget")
+        self.verticalLayout = QtWidgets.QVBoxLayout(self.widget)
+        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.labelplayer1 = QtWidgets.QLabel(self.widget)
+        self.labelplayer1.setStyleSheet("background-color: rgb(46, 194, 126);")
+        self.labelplayer1.setFrameShape(QtWidgets.QFrame.Box)
+        self.labelplayer1.setAlignment(QtCore.Qt.AlignCenter)
+        self.labelplayer1.setObjectName("labelplayer1")
+        self.verticalLayout.addWidget(self.labelplayer1)
+        self.labelplayer2 = QtWidgets.QLabel(self.widget)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.labelplayer2.sizePolicy().hasHeightForWidth())
+        self.labelplayer2.setSizePolicy(sizePolicy)
+        self.labelplayer2.setStyleSheet("color: rgb(0, 0, 0);")
+        self.labelplayer2.setFrameShape(QtWidgets.QFrame.Box)
+        self.labelplayer2.setAlignment(QtCore.Qt.AlignCenter)
+        self.labelplayer2.setObjectName("labelplayer2")
+        self.verticalLayout.addWidget(self.labelplayer2)
+        _translate = QtCore.QCoreApplication.translate
+        self.labelplayer1.setText(_translate("MainWindow", "BIALE"))
+        self.labelplayer2.setText(_translate("MainWindow", "CZARNE"))
+        self.horizontalLayout.addWidget(self.widget)
 
 
 
-        
+
+
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
@@ -332,3 +515,4 @@ if __name__ == "__main__":
     MainWindow.show()
     
     sys.exit(app.exec_())
+

@@ -37,56 +37,34 @@ def take_login_form(self):
         res,s=logInRequest(self.lineEdit_username.text(),self.lineEdit_password.text())
 
         if res['status']==200:
-            self.delete_frame()
-            self.user=None
-            
-            
-            #below code for matchmaking
-            res_match=matchmaking(s)
-            is_white=True
-            if(res_match['message']=="Game found successfully"):
-                is_white=False
-            ws=run_ws_from_other_program(res_match['event_server_url'].split("/")[5],self)
-           
-            ### setup gameframe
-            self.game_frame = GameFrame(self,is_white)
-            self.game_frame.board.difficulty=1
-            self.game_frame.board.username=tmp_user
-
-            #set matchmaking params to board
-            self.game_frame.board.id=res_match['id']
-            self.game_frame.board.session=s
-            self.game_frame.board.ws=ws
-            self.horizontalLayout.addWidget(self.game_frame)
-            ###widget do kolejnosci gry
-
-            self.widget = QtWidgets.QWidget(self.game_frame)
-            self.widget.setGeometry(QtCore.QRect(1000, 14, 161, 111))
-            self.widget.setStyleSheet("background-color: rgb(255, 255, 255);")
-            self.widget.setObjectName("widget")
-            self.verticalLayout = QtWidgets.QVBoxLayout(self.widget)
-            self.verticalLayout.setContentsMargins(0, 0, 0, 0)
-            self.verticalLayout.setObjectName("verticalLayout")
-            self.labelplayer1 = QtWidgets.QLabel(self.widget)
-            self.labelplayer1.setStyleSheet("background-color: rgb(46, 194, 126);")
-            self.labelplayer1.setFrameShape(QtWidgets.QFrame.Box)
-            self.labelplayer1.setAlignment(QtCore.Qt.AlignCenter)
-            self.labelplayer1.setObjectName("labelplayer1")
-            self.verticalLayout.addWidget(self.labelplayer1)
-            self.labelplayer2 = QtWidgets.QLabel(self.widget)
-            sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
-            sizePolicy.setHorizontalStretch(0)
-            sizePolicy.setVerticalStretch(0)
-            sizePolicy.setHeightForWidth(self.labelplayer2.sizePolicy().hasHeightForWidth())
-            self.labelplayer2.setSizePolicy(sizePolicy)
-            self.labelplayer2.setStyleSheet("color: rgb(0, 0, 0);")
-            self.labelplayer2.setFrameShape(QtWidgets.QFrame.Box)
-            self.labelplayer2.setAlignment(QtCore.Qt.AlignCenter)
-            self.labelplayer2.setObjectName("labelplayer2")
-            self.verticalLayout.addWidget(self.labelplayer2)
-            self.labelplayer1.setText(_translate("MainWindow", "BIALE"))
-            self.labelplayer2.setText(_translate("MainWindow", "CZARNE"))
-            self.horizontalLayout.addWidget(self.widget)
+            self.make_menu_frame()
+            #connect it to matchmakebutton drawBoard(self,tmp_user,s)
+            self.matchmake_button.clicked.connect(lambda: drawBoard(self,tmp_user,s))
 
         else:
             self.label.setText(_translate("MainWindow", res['message']))    
+def drawBoard(self,tmp_user,s):
+    self.user=None
+    
+    
+    #below code for matchmaking
+    res_match=matchmaking(s)
+    is_white=True
+
+    ws=run_ws_from_other_program(res_match['event_server_url'].split("/")[5],self)
+
+    if(res_match['message']=="Game found successfully"):
+        is_white=False
+        data=[self,res_match,s,tmp_user,is_white,ws]
+        self.gameStartData=data
+        self.game_frame = GameFrame(self,is_white)
+        self.start_game(0)
+    else:
+        self.make_wait_screen()
+        self.game_frame = GameFrame(self,is_white)
+        #put into array self,res_match,s,tmp_user,is_white
+        data=[self,res_match,s,tmp_user,is_white,ws]
+        self.gameStartData=data
+        
+   
+

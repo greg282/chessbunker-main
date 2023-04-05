@@ -1,4 +1,5 @@
 import copy
+from PyQt5 import QtCore, QtGui, QtWidgets,sip
 
 from PyQt5.QtCore import pyqtSignal, QPropertyAnimation, QEventLoop, QRegExp, Qt, QThread
 from PyQt5.QtGui import QIcon, QPixmap
@@ -8,6 +9,7 @@ import common
 from consts import CASTLING, PROMOTION, KNIGHT_PROMOTION, BISHOP_PROMOTION, ROOK_PROMOTION, QUEEN_PROMOTION
 from position import Position
 from search import Search
+from .game import *
 from .services.service import *
 import threading
 SQR_SIZE = 75
@@ -50,6 +52,8 @@ class ChessBoard(QFrame):
     def threadConstructor(self,message):
         self.search_thread = SearchThread(self,message)
 
+    def threadJoin(self,data):
+        self.joinThread=SignalThread(data,self)
 
     def resizeEvent(self, event):
         if event.size().width() > event.size().height():
@@ -371,6 +375,60 @@ class ChessBoard(QFrame):
     def save(self):
         self.parent.parent.user.saved_game = copy.deepcopy(self.position)
         self.saved = True
+
+    def start_game_2(self,signal):    
+        self,res_match,s,tmp_user,is_white,ws=self.gameStartData[0],self.gameStartData[1],self.gameStartData[2],self.gameStartData[3],self.gameStartData[4],self.gameStartData[5]
+        ### setup gameframe
+        print(signal)
+        self.delete_frame()
+        #self.game_frame = GameFrame(self,is_white)
+        self.game_frame.board.difficulty=1
+        self.game_frame.board.username=tmp_user
+        #set matchmaking params to board
+        self.game_frame.board.id=res_match['id']
+        self.game_frame.board.session=s
+        self.game_frame.board.ws=ws
+        self.horizontalLayout.addWidget(self.game_frame)
+        ###widget do kolejnosci gr
+        self.widget = QtWidgets.QWidget(self.game_frame)
+        self.widget.setGeometry(QtCore.QRect(1000, 14, 161, 111))
+        self.widget.setStyleSheet("background-color: rgb(255, 255, 255);")
+        self.widget.setObjectName("widget")
+        self.verticalLayout = QtWidgets.QVBoxLayout(self.widget)
+        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.labelplayer1 = QtWidgets.QLabel(self.widget)
+        self.labelplayer1.setStyleSheet("background-color: rgb(46, 194, 126);")
+        self.labelplayer1.setFrameShape(QtWidgets.QFrame.Box)
+        self.labelplayer1.setAlignment(QtCore.Qt.AlignCenter)
+        self.labelplayer1.setObjectName("labelplayer1")
+        self.verticalLayout.addWidget(self.labelplayer1)
+        self.labelplayer2 = QtWidgets.QLabel(self.widget)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.labelplayer2.sizePolicy().hasHeightForWidth())
+        self.labelplayer2.setSizePolicy(sizePolicy)
+        self.labelplayer2.setStyleSheet("color: rgb(0, 0, 0);")
+        self.labelplayer2.setFrameShape(QtWidgets.QFrame.Box)
+        self.labelplayer2.setAlignment(QtCore.Qt.AlignCenter)
+        self.labelplayer2.setObjectName("labelplayer2")
+        self.verticalLayout.addWidget(self.labelplayer2)
+        _translate = QtCore.QCoreApplication.translate
+        self.labelplayer1.setText(_translate("MainWindow", "BIALE"))
+        self.labelplayer2.setText(_translate("MainWindow", "CZARNE"))
+        self.horizontalLayout.addWidget(self.widget)
+
+class SignalThread(QThread):
+    join_signal = pyqtSignal(int)
+
+    def __init__(self,gameStartData,obj):
+        super().__init__()
+        self.obj=obj
+        self.obj.gameStartData = gameStartData
+        self.join_signal.connect(self.obj.start_game_2)
+    def run(self):        
+        self.join_signal.emit(2137)
 
 
 class SearchThread(QThread):
