@@ -1,0 +1,69 @@
+QTableWidget {
+    background-color: #F2F2F2;
+    border: none;
+    border-radius: 10px;
+    font-family: Arial;
+    font-size: 18px;
+}
+
+QTableWidget QHeaderView {
+    background-color: #EFEFEF;
+    border: none;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+QTableWidget QHeaderView::section {
+    border-radius: 10px;
+    padding: 10px;
+}
+
+QTableWidget QHeaderView::section:first {
+    border-top-left-radius: 10px;
+}
+
+QTableWidget QHeaderView::section:last {
+    border-top-right-radius: 10px;
+}
+
+QTableWidget::item {
+    padding: 10px;
+}
+
+QTableWidget::item:hover {
+    background-color: #DADADA;
+}
+
+QComboBox {
+    border: none;
+    border-radius: 5px;
+    background-color: #EFEFEF;
+    font-size: 18px;
+    padding: 5px;
+}
+
+QComboBox::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    width: 30px;
+    border-left-width: 1px;
+    border-left-color: gray;
+    border-left-style: solid;
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+QComboBox::down-arrow {
+    image: url(down_arrow.png);
+    width: 20px;
+    height: 20px;
+}
+
+QComboBox QAbstractItemView {
+    border: none;
+    border-radius: 5px;
+    background-color: #EFEFEF;
+    font-size: 18px;
+    padding: 5px;
+    selection-background-color: #DADADA;
+}
