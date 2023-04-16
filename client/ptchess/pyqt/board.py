@@ -11,6 +11,7 @@ from position import Position
 from search import Search
 from .game import *
 from .services.service import *
+from .chat import *
 import threading
 SQR_SIZE = 75
 
@@ -23,6 +24,7 @@ class ChessBoard(QFrame):
         self.parent = parent
         self.user = self.parent.parent.user
         self.username=None
+        self.opponent=None
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.setContentsMargins(0, 0, 0, 0)
 
@@ -377,7 +379,12 @@ class ChessBoard(QFrame):
         self.saved = True
 
     def start_game_2(self,signal):    
+        self_board=self
         self,res_match,s,tmp_user,is_white,ws=self.gameStartData[0],self.gameStartData[1],self.gameStartData[2],self.gameStartData[3],self.gameStartData[4],self.gameStartData[5]
+        #intialize chat
+        self_board.parent.parent.chat=ChatWindow(tmp_user,ws)
+        self_board.parent.parent.chat.show()
+
         ### setup gameframe
         print(signal)
         self.delete_frame()

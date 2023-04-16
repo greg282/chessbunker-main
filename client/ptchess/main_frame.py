@@ -15,7 +15,7 @@ from PyQt5.QtCore import pyqtSignal,QThread
 from pyqt.services.service  import *
 from pyqt.services.button_function import *
 from leaderboard import *
-
+from pyqt.chat import *
 
 class Ui_MainWindow(object):
     MainWindow_=None
@@ -78,8 +78,19 @@ class Ui_MainWindow(object):
     def delete_frame(self):
         sip.delete(self.frame)
     
+    #websocket functions
+    def chatMSG(self,message):
+        if self.chat is not None:
+            tmp_res=json.loads(message)['message'].split("@")
+            tmp_usr=tmp_res[2]
+            tmp_msg=tmp_res[1]
+            if tmp_usr!=self.game_frame.board.username:
+                self.chat.send_message_oponent(tmp_msg,tmp_usr)
 
     def onMSG(self,ws,message):
+        if json.loads(message)['message'].split("@")[0]=="chat":
+            self.chatMSG(message)
+            return
         print(message)
         if(json.loads(message)['message']=="ROOM_JOINED"):
             self.room_join_counter+=1
@@ -89,11 +100,13 @@ class Ui_MainWindow(object):
 
                self.game_frame.board.threadJoin(self.gameStartData)
                self.game_frame.board.joinThread.start()
+          
         if(json.loads(message)['message']!="ROOM_JOINED"):
             tmp_res=json.loads(message)['message'].split("@")
             tmp_usr=tmp_res[0]
             tmp_move=int(tmp_res[1])
         if(json.loads(message)['message']!="ROOM_JOINED" and self.game_frame.board.username!=tmp_usr):
+            self.game_frame.board.opponent=tmp_usr
             self.game_frame.board.threadConstructor(int(tmp_move))
             self.game_frame.board.search_thread.start()
             #self.game_frame.board.getOnlineMove(int(json.loads(message)['message']))
@@ -378,7 +391,11 @@ class Ui_MainWindow(object):
         self.label.setText(_translate("MainWindow", "Please wait for opponent ..."))
 
     def start_game(self,signal):    
+    
         self,res_match,s,tmp_user,is_white,ws=self.gameStartData[0],self.gameStartData[1],self.gameStartData[2],self.gameStartData[3],self.gameStartData[4],self.gameStartData[5]
+        #intialize chat
+        self.chat = ChatWindow(tmp_user,ws)
+        self.chat.show()
         ### setup gameframe
         print(signal)
         self.delete_frame()
@@ -423,8 +440,8 @@ class Ui_MainWindow(object):
     def make_leadearboard(self):
         self.leaderboard = Leaderboard(getData())
         self.leaderboard.show()
-
-
+  
+       
 
 
 if __name__ == "__main__":

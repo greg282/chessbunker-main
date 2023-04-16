@@ -3,7 +3,6 @@ from PyQt5.QtWidgets import QFrame, QHBoxLayout, QMessageBox, QVBoxLayout, QWidg
 
 from pyqt.board import ChessBoard
 
-
 class GameFrame(QFrame):
     def __init__(self, parent,is_white):
         super().__init__()
@@ -39,6 +38,8 @@ class GameFrame(QFrame):
         vbox_widget.setLayout(vbox_layout)
 
         self.setLayout(vbox_layout)
+
+
 
     def back(self):
         if self.parent.user and not self.board.saved:
