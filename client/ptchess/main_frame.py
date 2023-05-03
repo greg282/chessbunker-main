@@ -82,17 +82,18 @@ class Ui_MainWindow(object):
     #websocket functions
     def chatMSG(self,message):
         if self.chat is not None:
-            tmp_res=json.loads(message)['message'].split("@")
-            tmp_usr=tmp_res[2]
-            tmp_msg=tmp_res[1]
+            tmp_res=json.loads(json.loads(message)['message'])
+            print(tmp_res)
+            tmp_usr=tmp_res['username']
+            tmp_msg=tmp_res['message']
             if tmp_usr!=self.game_frame.board.username:
                 self.chat.send_message_oponent(tmp_msg,tmp_usr)
 
     def onMSG(self,ws,message):
-        if json.loads(message)['message'].split("@")[0]=="chat":
+        print(message)
+        if json.loads(message)['message']!="ROOM_JOINED" and json.loads(json.loads(message)['message'])['type']=="chat":
             self.chatMSG(message)
             return
-        print(message)
         if(json.loads(message)['message']=="ROOM_JOINED"):
             self.room_join_counter+=1
             print(self.room_join_counter)
@@ -103,9 +104,9 @@ class Ui_MainWindow(object):
                self.game_frame.board.joinThread.start()
           
         if(json.loads(message)['message']!="ROOM_JOINED"):
-            tmp_res=json.loads(message)['message'].split("@")
-            tmp_usr=tmp_res[0]
-            tmp_move=int(tmp_res[1])
+            tmp_res=json.loads(json.loads(message)['message'])
+            tmp_usr=tmp_res['username']
+            tmp_move=int(tmp_res['move'])
         if(json.loads(message)['message']!="ROOM_JOINED" and self.game_frame.board.username!=tmp_usr):
             self.game_frame.board.opponent=tmp_usr
             self.game_frame.board.threadConstructor(int(tmp_move))

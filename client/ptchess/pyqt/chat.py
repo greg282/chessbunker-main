@@ -34,10 +34,15 @@ class ChatWindow(QMainWindow):
         message = self.chat_input.text()
         if message:
             # Display message in chat history
+            request={
+                'type':'chat',
+                'message':message,
+                'username':self.username
+            }
             self.chat_history.append(f"{self.username}: {message}\n")
             self.ws.send(json.dumps({
             "type": "event",
-            "message": "chat@"+message+"@"+self.username
+            "message": json.dumps(request)
         }))
             self.chat_input.clear()
 

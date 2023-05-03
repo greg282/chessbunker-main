@@ -249,9 +249,13 @@ class ChessBoard(QFrame):
             self.do_rook_castle(dst_index, is_undo)
 
     def getcmd(self,move,username):
+        request = {
+            'type': 'move',
+            'move': move,
+            'username': username}
         return {
             "type": "event",
-            "message": username+"@"+str(move)
+            "message": json.dumps(request)
         }
 
     def bit_code_move_toString(self,move):
