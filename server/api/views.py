@@ -2,6 +2,8 @@ import random
 import string
 import uuid
 import chess
+import re
+from django.db import IntegrityError
 from chessbunker.settings import WEBSOCKET_SERVER_URL
 from django.http import JsonResponse
 from django.views import View
@@ -41,6 +43,14 @@ class PlayerAPI(View):
             if 'email' not in body:
                 return JsonResponse({"status": 400, "message": "Provide user email to request body"}, status=400)
 
+            # # Validate email
+            # if re.match(r"[^@]+@[^@]+\.[^@]+", body['email']) == None:
+            #     return JsonResponse({"status": 400, "message": "Invalid email"}, status=400)
+
+            # # Validate password
+            # if len(body['password']) < 8 or len(body['password']) > 50:
+            #     return JsonResponse({"status": 400, "message": "Password must be between 8 and 50 characters"}, status=400)
+
             user = User.objects.create_user(
                 username=body['username'], password=body['password'],
                 email=body['email'])
@@ -51,6 +61,9 @@ class PlayerAPI(View):
             player.save()
 
             return JsonResponse({"status": 200, "message": "User created successfully"}, status=200)
+
+        except IntegrityError as e:
+            return JsonResponse({"status": 400, "message": "User with this credentials already exist"}, status=400)
         except Exception as e:
             return JsonResponse({"status": 500, "message": str(e)}, status=500)
 
@@ -77,16 +90,7 @@ class PlayerAPI(View):
 
             body = json.loads(request.body.decode('utf-8'))
 
-            # did_update_statistics = False
-
-            # allowed_player_updates = set(['games_played',
-            #  'games_won', 'games_lost', 'games_draw'])
-
             for key in body:
-                # if key in allowed_player_updates:
-                #     setattr(request.user.player, key, body[key])
-                #     did_update_statistics = True
-
                 if key in allowed_user_updates:
                     if key == 'password':
                         request.user.set_password(body[key])
@@ -94,11 +98,6 @@ class PlayerAPI(View):
                         setattr(request.user, key, body[key])
                 else:
                     return JsonResponse({"status": 400, "message": "Invalid key in request body"}, status=400)
-
-            # if did_update_statistics:
-            #     # Update elo
-            #     setattr(request.user.player, 'elo', request.user.player.elo +
-            #             request.user.player.games_won - request.user.player.games_lost)
 
             request.user.player.save()
             request.user.save()
@@ -399,6 +398,33 @@ class GameAPI(View):
 
                     setattr(game, 'status', Game.Status.ENDED)
 
+                game.save()
+
+            elif body["action"] == "STOP":
+                # Set user making the request as the loser
+                if game.white == request.user.player:
+                    setattr(game, 'winner', game.black)
+                    winner = game.black
+                    loser = game.white
+                else:
+                    setattr(game, 'winner', game.white)
+                    winner = game.white
+                    loser = game.black
+
+                # Update user stats
+                player = Player.objects.get(id=winner.id)
+                player.games_won += 1
+                player.games_played += 1
+                player.elo += 10
+                player.save()
+
+                player = Player.objects.get(id=loser.id)
+                player.games_lost += 1
+                player.games_played += 1
+                player.elo -= 10
+                player.save()
+
+                setattr(game, 'status', Game.Status.ENDED)
                 game.save()
 
             return JsonResponse({"status": 200, "message": "Game updated successfully", "fen": game.fen}, status=200)

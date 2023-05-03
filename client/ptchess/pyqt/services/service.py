@@ -43,3 +43,16 @@ def update_board(s,id,move):
 
     print(json.loads(res.text))
     return json.loads(res.text)
+
+def resign_game(s,id):
+    res = s.patch('http://localhost:8000/api/game/',data=json.dumps({
+        "id": id,
+        "action": "STOP"
+        }))
+
+    print(json.loads(res.text))
+    return json.loads(res.text)
+def logout(s):
+    res = s.post('http://localhost:8000/api/player/logout/')
+    print(json.loads(res.text))
+    return json.loads(res.text)

@@ -10,7 +10,7 @@ from time import sleep
 from pyqt.game import GameFrame
 import json
 from PyQt5 import QtCore, QtGui, QtWidgets,sip
-from PyQt5.QtWidgets import QStackedWidget
+from PyQt5.QtWidgets import QStackedWidget,QMessageBox
 from PyQt5.QtCore import pyqtSignal,QThread
 from pyqt.services.service  import *
 from pyqt.services.button_function import *
@@ -22,6 +22,7 @@ class Ui_MainWindow(object):
     room_join_counter=0
     gameStartData=None
     def setupUi(self, MainWindow):
+        MainWindow.closeEvent = self.closeEvent
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(800, 600)
         MainWindow.setStyleSheet("background-color: rgb(36,36,36);")
@@ -440,7 +441,15 @@ class Ui_MainWindow(object):
     def make_leadearboard(self):
         self.leaderboard = Leaderboard(getData())
         self.leaderboard.show()
-  
+
+    #on close event resign user from match
+    def closeEvent(self, event):
+        print("closing")
+        if hasattr(self, 'game_frame') and hasattr(self.game_frame,'board'):
+            resign_game(self.game_frame.board.session,self.game_frame.board.id)
+            #logout user
+            logout(self.game_frame.board.session)
+      
        
 
 
