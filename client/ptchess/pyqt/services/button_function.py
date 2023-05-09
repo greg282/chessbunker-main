@@ -17,7 +17,7 @@ def take_signup_form(self):
             self.label.setText(_translate("MainWindow", "Passwords are not the same"))
             return
 
-        res=signUpRequest(self.lineEdit_username.text(),self.lineEdit_email.text(),self.lineEdit_password.text())
+        res=signUpRequest(self.lineEdit_username.text(),self.lineEdit_password.text(),self.lineEdit_email.text())
         if res['status']==200:
             self.label.setText(_translate("MainWindow",res['message']))
             sip.delete(self.frame_sign_up)

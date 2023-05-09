@@ -450,7 +450,6 @@ class Ui_MainWindow(object):
             resign_game(self.game_frame.board.session,self.game_frame.board.id)
             #logout user
             logout(self.game_frame.board.session)
-      
        
 
 

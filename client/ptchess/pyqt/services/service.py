@@ -5,7 +5,7 @@ import json
 
 def signUpRequest(username,password,email):
     s = requests.Session()
-
+    print(username,password,email)
 
     res = s.post('http://localhost:8000/api/player/', data=json.dumps({
     "username": username,
