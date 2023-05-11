@@ -272,7 +272,19 @@ class GameAPI(View):
                 return JsonResponse({"status": 400, "message": "You are already in matchmaking"}, status=400)
 
             game = Game.objects.filter(
-                status=Game.Status.MATCHMAKING).exclude(white=request.user.player, black=request.user.player).order_by('date').first()
+                status=Game.Status.MATCHMAKING).exclude(white=request.user.player, black=request.user.player).order_by('date')
+            
+            # Get the game with elo difference less than 100
+            best_game = None
+            for g in game:
+                game_player_elo = g.white.elo if g.white else g.black.elo
+                user_elo = request.user.player.elo
+
+                if abs(game_player_elo - user_elo) <= 100:
+                    best_game = g
+                    break
+            
+            game = best_game
 
             if game:
                 if game.white:
@@ -303,7 +315,8 @@ class GameAPI(View):
                 timer = body['timer']
 
             room_id = str(uuid.uuid4()).replace('-', '')
-            side = 'white' if random.randint(0, 1) == 0 else 'black'
+            # side = 'white' if random.randint(0, 1) == 0 else 'black'
+            side = 'white'
             server_url = f"{WEBSOCKET_SERVER_URL}/{room_id}"
 
             game = Game(join_code=join_code, status=status,
