@@ -434,6 +434,18 @@ class Ui_MainWindow(object):
         self.labelplayer2.setAlignment(QtCore.Qt.AlignCenter)
         self.labelplayer2.setObjectName("labelplayer2")
         self.verticalLayout.addWidget(self.labelplayer2)
+
+        ##
+        self.player_color_box = QtWidgets.QLabel(self.widget)
+        if is_white:
+            self.player_color_box.setStyleSheet( "background-color: rgb(255,255,255);")
+        else:
+            self.player_color_box.setStyleSheet( "background-color: rgb(0,0,0);")
+        self.player_color_box.setFrameShape(QtWidgets.QFrame.Box)
+        self.player_color_box.setAlignment(QtCore.Qt.AlignCenter)
+        self.player_color_box.setObjectName("labelplayer1")
+        self.verticalLayout.addWidget(self.player_color_box)
+        ##
         _translate = QtCore.QCoreApplication.translate
         self.labelplayer1.setText(_translate("MainWindow", "BIALE"))
         self.labelplayer2.setText(_translate("MainWindow", "CZARNE"))
