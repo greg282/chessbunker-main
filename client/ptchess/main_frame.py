@@ -455,6 +455,66 @@ class Ui_MainWindow(object):
         self.leaderboard = Leaderboard(getData())
         self.leaderboard.show()
 
+    def make_menu_frame_from_board(self):
+        self.centralwidget = QtWidgets.QWidget(MainWindow)
+        self.centralwidget.setObjectName("centralwidget")
+        self.horizontalLayout = QtWidgets.QHBoxLayout(self.centralwidget)
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        self.frame = QtWidgets.QFrame(self.centralwidget)
+        self.frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self.frame.setFrameShadow(QtWidgets.QFrame.Raised)
+        self.frame.setObjectName("frame")
+        self.horizontalLayout_2 = QtWidgets.QHBoxLayout(self.frame)
+        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
+        self.widget = QtWidgets.QWidget(self.frame)
+        self.widget.setStyleSheet("")
+        self.widget.setObjectName("widget")
+        self.verticalLayout = QtWidgets.QVBoxLayout(self.widget)
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.matchmake_button = QtWidgets.QPushButton(self.widget)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.matchmake_button.sizePolicy().hasHeightForWidth())
+        self.matchmake_button.setSizePolicy(sizePolicy)
+        font = QtGui.QFont()
+        font.setPointSize(20)
+        self.matchmake_button.setFont(font)
+        self.matchmake_button.setObjectName("matchmake_button")
+        self.verticalLayout.addWidget(self.matchmake_button, 0, QtCore.Qt.AlignHCenter)
+        self.globalrankin_button = QtWidgets.QPushButton(self.widget)
+        self.globalrankin_button.clicked.connect(self.make_leadearboard)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.globalrankin_button.sizePolicy().hasHeightForWidth())
+        self.globalrankin_button.setSizePolicy(sizePolicy)
+        font = QtGui.QFont()
+        font.setPointSize(20)
+        self.globalrankin_button.setFont(font)
+        self.globalrankin_button.setObjectName("globalrankin_button")
+        self.verticalLayout.addWidget(self.globalrankin_button, 0, QtCore.Qt.AlignHCenter)
+        self.horizontalLayout_2.addWidget(self.widget)
+        self.horizontalLayout.addWidget(self.frame)
+        MainWindow.setCentralWidget(self.centralwidget)
+   
+
+        _translate = QtCore.QCoreApplication.translate
+
+        self.retranslateUi(MainWindow)
+        QtCore.QMetaObject.connectSlotsByName(MainWindow)
+        self.matchmake_button.setText(_translate("MainWindow", "Matchmaking"))
+        self.globalrankin_button.setText(_translate("MainWindow", "Global Ranking"))
+
+        #connect actionBack to function
+        self.actionBack.triggered.connect(self.regenerate_initial_frame)
+
+    def fix_menu_frame_from_board(self):
+        self.room_join_counter=0
+        resign_game(self.game_frame.board.session,self.game_frame.board.id)
+        bypass_login(self,self.game_frame.board.session)
+
+
     #on close event resign user from match
     def closeEvent(self, event):
         print("closing")
@@ -462,7 +522,7 @@ class Ui_MainWindow(object):
             resign_game(self.game_frame.board.session,self.game_frame.board.id)
             #logout user
             logout(self.game_frame.board.session)
-       
+    
 
 
 if __name__ == "__main__":

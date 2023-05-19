@@ -50,6 +50,18 @@ class ChessBoard(QFrame):
         self.id=None
         self.session=None
 
+        ##set action back from main_frame to handle current frame
+        self.parent.parent.actionBack.triggered.disconnect()
+        self.parent.parent.actionBack.triggered.connect(self.menu_bar_go_back)
+
+    def menu_bar_go_back(self):
+        #delete game frame
+        sip.delete(self.parent)
+        sip.delete(self.parent.parent.chat)
+        sip.delete(self.parent.parent.widget)
+        self.parent.parent.actionBack.triggered.disconnect()
+        self.parent.parent.make_menu_frame_from_board()
+        self.parent.parent.fix_menu_frame_from_board()
 
     def threadConstructor(self,message):
         self.search_thread = SearchThread(self,message)

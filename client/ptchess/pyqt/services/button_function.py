@@ -43,6 +43,10 @@ def take_login_form(self):
 
         else:
             self.label.setText(_translate("MainWindow", res['message']))    
+
+def bypass_login(self,s):
+    self.matchmake_button.clicked.connect(lambda: drawBoard(self,self.game_frame.board.username,s))
+
 def drawBoard(self,tmp_user,s):
     self.user=None
     

@@ -44,12 +44,13 @@ class PlayerAPI(View):
                 return JsonResponse({"status": 400, "message": "Provide user email to request body"}, status=400)
 
             # # Validate email
-            # if re.match(r"[^@]+@[^@]+\.[^@]+", body['email']) == None:
-            #     return JsonResponse({"status": 400, "message": "Invalid email"}, status=400)
+            if ENVIRONMENT == 'production':
+                if re.match(r"[^@]+@[^@]+\.[^@]+", body['email']) == None:
+                    return JsonResponse({"status": 400, "message": "Invalid email"}, status=400)
 
-            # # Validate password
-            # if len(body['password']) < 8 or len(body['password']) > 50:
-            #     return JsonResponse({"status": 400, "message": "Password must be between 8 and 50 characters"}, status=400)
+                # # Validate password
+                if len(body['password']) < 8 or len(body['password']) > 50:
+                    return JsonResponse({"status": 400, "message": "Password must be between 8 and 50 characters"}, status=400)
 
             user = User.objects.create_user(
                 username=body['username'], password=body['password'],
@@ -273,7 +274,7 @@ class GameAPI(View):
 
             game = Game.objects.filter(
                 status=Game.Status.MATCHMAKING).exclude(white=request.user.player, black=request.user.player).order_by('date')
-            
+
             # Get the game with elo difference less than 100
             best_game = None
             for g in game:
@@ -283,7 +284,7 @@ class GameAPI(View):
                 if abs(game_player_elo - user_elo) <= 100:
                     best_game = g
                     break
-            
+
             game = best_game
 
             if game:
@@ -315,7 +316,6 @@ class GameAPI(View):
                 timer = body['timer']
 
             room_id = str(uuid.uuid4()).replace('-', '')
-            # side = 'white' if random.randint(0, 1) == 0 else 'black'
             side = 'white'
             server_url = f"{WEBSOCKET_SERVER_URL}/{room_id}"
 
