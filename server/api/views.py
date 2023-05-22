@@ -327,6 +327,22 @@ class GameAPI(View):
             return JsonResponse({"status": 200, "message": "Matchmaking started successfully", "event_server_url": server_url, "join_code": join_code, "id": game.id}, status=200)
         except Exception as e:
             return JsonResponse({"status": 500, "message": str(e)}, status=500)
+        
+    def update_player_stats(self, winner, loser):
+        try:
+            player = Player.objects.get(id=winner.id)
+            player.games_won += 1
+            player.games_played += 1
+            player.elo += 10
+            player.save()
+
+            player = Player.objects.get(id=loser.id)
+            player.games_lost += 1
+            player.games_played += 1
+            player.elo -= 10
+            player.save()
+        except Exception as e:
+            raise Exception(e)
 
     @method_decorator(login_required)
     def patch(self, request):
@@ -394,17 +410,7 @@ class GameAPI(View):
                             loser = game.black
 
                         # Update user stats
-                        player = Player.objects.get(id=winner.id)
-                        player.games_won += 1
-                        player.games_played += 1
-                        player.elo += 10
-                        player.save()
-
-                        player = Player.objects.get(id=loser.id)
-                        player.games_lost += 1
-                        player.games_played += 1
-                        player.elo -= 10
-                        player.save()
+                        self.update_player_stats(winner, loser)
 
                     else:
                         setattr(game, 'winner', None)
@@ -414,6 +420,12 @@ class GameAPI(View):
                 game.save()
 
             elif body["action"] == "STOP":
+                if game.status == Game.Status.MATCHMAKING:
+                    setattr(game, 'status', Game.Status.ENDED)
+                    game.save()
+
+                    return JsonResponse({"status": 200, "message": "Matchmaking ended successfully"}, status=200)
+
                 # Set user making the request as the loser
                 if game.white == request.user.player:
                     setattr(game, 'winner', game.black)
@@ -425,17 +437,7 @@ class GameAPI(View):
                     loser = game.black
 
                 # Update user stats
-                player = Player.objects.get(id=winner.id)
-                player.games_won += 1
-                player.games_played += 1
-                player.elo += 10
-                player.save()
-
-                player = Player.objects.get(id=loser.id)
-                player.games_lost += 1
-                player.games_played += 1
-                player.elo -= 10
-                player.save()
+                self.update_player_stats(winner, loser)
 
                 setattr(game, 'status', Game.Status.ENDED)
                 game.save()
@@ -472,29 +474,17 @@ class GameAPI(View):
                 return JsonResponse({"status": 200, "message": "Game left successfully"}, status=200)
 
             # If both players joined, set the other player as winner
-
             if game.white == request.user.player:
                 setattr(game, 'winner', game.black)
                 winner = game.black
                 loser = game.white
-
             else:
                 setattr(game, 'winner', game.white)
                 winner = game.white
                 loser = game.black
 
             # Update user stats
-            player = Player.objects.get(id=winner.id)
-            player.games_won += 1
-            player.games_played += 1
-            player.elo += 10
-            player.save()
-
-            player = Player.objects.get(id=loser.id)
-            player.games_lost += 1
-            player.games_played += 1
-            player.elo -= 10
-            player.save()
+            self.update_player_stats(winner, loser)
 
             setattr(game, 'status', Game.Status.ENDED)
             game.save()

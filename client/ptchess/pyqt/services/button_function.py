@@ -64,7 +64,7 @@ def drawBoard(self,tmp_user,s):
         self.game_frame = GameFrame(self,is_white)
         self.start_game(0)
     else:
-        self.make_wait_screen()
+        self.make_wait_screen(s,res_match)
         self.game_frame = GameFrame(self,is_white)
         #put into array self,res_match,s,tmp_user,is_white
         data=[self,res_match,s,tmp_user,is_white,ws]

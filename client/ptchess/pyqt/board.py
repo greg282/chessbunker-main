@@ -14,7 +14,7 @@ from .services.service import *
 from .chat import *
 import threading
 SQR_SIZE = 75
-
+BOARD_SIZE = 800
 
 class ChessBoard(QFrame):
     def __init__(self, parent,is_white):
@@ -27,7 +27,7 @@ class ChessBoard(QFrame):
         self.opponent=None
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.setContentsMargins(0, 0, 0, 0)
-
+        #self.setFixedSize(BOARD_SIZE, BOARD_SIZE)
         self.layout = QGridLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setSpacing(0)
@@ -57,7 +57,9 @@ class ChessBoard(QFrame):
     def menu_bar_go_back(self):
         #delete game frame
         sip.delete(self.parent)
-        sip.delete(self.parent.parent.chat)
+        #check if chat is not deleted
+        if self.parent.parent.chat:
+            sip.delete(self.parent.parent.chat)
         sip.delete(self.parent.parent.widget)
         self.parent.parent.actionBack.triggered.disconnect()
         self.parent.parent.make_menu_frame_from_board()
@@ -394,7 +396,10 @@ class ChessBoard(QFrame):
         self.parent.parent.user.saved_game = copy.deepcopy(self.position)
         self.saved = True
 
-    def start_game_2(self,signal):    
+    def start_game_2(self,signal):  
+        _translate = QtCore.QCoreApplication.translate
+        self.parent.parent.actionBack_matchmake.setText(_translate("MainWindow", ""))
+  
         self_board=self
         self,res_match,s,tmp_user,is_white,ws=self.gameStartData[0],self.gameStartData[1],self.gameStartData[2],self.gameStartData[3],self.gameStartData[4],self.gameStartData[5]
         #intialize chat
@@ -495,7 +500,7 @@ class PieceLabel(QLabel):
 
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.setMinimumSize(1, 1)
-
+        #self.setFixedSize(int(BOARD_SIZE/8), int(BOARD_SIZE/8))
         self.setAttribute(Qt.WA_TranslucentBackground)
 
         self.board = parent

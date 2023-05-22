@@ -70,6 +70,12 @@ class Ui_MainWindow(object):
         self.menuBack.addAction(self.actionBack)
         self.menubar.addAction(self.menuBack.menuAction())
 
+        self.actionBack_matchmake = QtWidgets.QAction(MainWindow)
+        self.actionBack_matchmake.setObjectName("actionBack_matchmake")
+        self.menuBack.addAction(self.actionBack_matchmake)
+
+        _translate = QtCore.QCoreApplication.translate
+
         _translate = QtCore.QCoreApplication.translate
         self.menuBack.setTitle(_translate("MainWindow", "Menu"))
         self.actionBack.setText(_translate("MainWindow", "Go back"))
@@ -354,7 +360,7 @@ class Ui_MainWindow(object):
         self.actionBack.triggered.disconnect()
         self.make_initial_frame()
 
-    def make_wait_screen(self):
+    def make_wait_screen(self,local_ses,local_id):
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.horizontalLayout = QtWidgets.QHBoxLayout(self.centralwidget)
@@ -391,9 +397,20 @@ class Ui_MainWindow(object):
 
         _translate = QtCore.QCoreApplication.translate
         self.label.setText(_translate("MainWindow", "Please wait for opponent ..."))
+        self.local_ses=local_ses
+        self.local_id=local_id['id']
+
+       
+        self.actionBack_matchmake.setText(_translate("MainWindow", "Close matchmaking"))
+
+        self.actionBack_matchmake.triggered.connect(self.close_local)
+
+        
 
     def start_game(self,signal):    
-    
+        _translate = QtCore.QCoreApplication.translate
+        self.actionBack_matchmake.setText(_translate("MainWindow", ""))
+
         self,res_match,s,tmp_user,is_white,ws=self.gameStartData[0],self.gameStartData[1],self.gameStartData[2],self.gameStartData[3],self.gameStartData[4],self.gameStartData[5]
         #intialize chat
         self.chat = ChatWindow(tmp_user,ws)
@@ -515,13 +532,28 @@ class Ui_MainWindow(object):
         bypass_login(self,self.game_frame.board.session)
 
 
+
+    def close_local(self):
+        resign_game(self.local_ses,self.local_id)
+        self.make_menu_frame()
+        self.actionBack_matchmake.triggered.disconnect()
+        self.room_join_counter=0
+        bypass_login(self,self.local_ses)
+        _translate = QtCore.QCoreApplication.translate
+        self.actionBack_matchmake.setText(_translate("MainWindow", "Close matchmaking"))
+
     #on close event resign user from match
     def closeEvent(self, event):
         print("closing")
         if hasattr(self, 'game_frame') and hasattr(self.game_frame,'board'):
-            resign_game(self.game_frame.board.session,self.game_frame.board.id)
-            #logout user
-            logout(self.game_frame.board.session)
+            #check if self.game_frame.board.session is not None
+            if self.game_frame.board.session is not None:
+                resign_game(self.game_frame.board.session,self.game_frame.board.id)
+                logout(self.game_frame.board.session)
+            else:
+                resign_game(self.local_ses,self.local_id)
+                logout(self.local_ses)
+            
     
 
 
